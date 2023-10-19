@@ -42,59 +42,8 @@ class APrioriClassifier(AbstractClassifier) :
         super().__init__()
 
     def estimClass(self, attrs):
+        """Renvoie la classe majoritaire (malade == 1)"""
         return 1
-        # # global a_priori
-        # a_priori = getPrior(train)
-
-        # # Récupérez l'estimation de la probabilité a priori
-        # prior_estimation = a_priori['estimation']
-        
-        # # Déterminez un seuil 
-        # seuil = 0.5
-        
-        # # Si l'estimation est supérieure au seuil, le patient est prédit comme malade (1), sinon non malade (0)
-        # if prior_estimation > seuil:
-        #     return 1
-        # return 0
-
-    # def estimClass(self, attrs):
-    #     """
-    #     L'idée est de trouver tous les patients avec un même profil que attrs, calculer la proba qu'il soit malade, et vérifier s'il se trouve dans l'intervalle de confiance.  Demander au prof
-    #     On va travailler avec la classe train pour le moment                                                 
-    #     """
-    #     # DEMANDE AU PROF
-    #     data = train 
-
-    #     # Supprimez la colonne "target" du DataFrame
-    #     data_WO_target = data.drop("target", axis=1)
-
-    #     # Supprimez également la clé "target" du dictionnaire d'attributs
-    #     attrs_WO_target = {key: value for key, value in attrs.items() if key != "target"}
-
-    #     # Trouvez les profils identiques 
-    #     profil_identiques = data[data_WO_target.eq(attrs_WO_target).all(axis=1)]
-
-    #     # Calculez le nombre de profils identiques et le nombre de malades parmi eux
-    #     len_ident = len(profil_identiques)
-    #     len_malade = len(profil_identiques[profil_identiques['target'] == 1])
-
-    #     # Estime la probabilité
-    #     estim_attrs = len_malade / len_ident
-
-    #     # Obtenez l'estimation a priori
-    #     apriori = getPrior(train)
-
-    #     if apriori is not None:
-    #         # Obtenez les bornes de l'intervalle de confiance
-    #         min5pourcent = apriori['min5pourcent']
-    #         max5pourcent = apriori['max5pourcent']
-
-    #         # Vérifiez si l'estimation est en dehors de l'intervalle de confiance
-    #         if estim_attrs >= min5pourcent and estim_attrs <= max5pourcent:
-    #             return 1
-
-    #     return 0
-  
 
     def statsOnDF(self, df):
         """
