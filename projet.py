@@ -78,6 +78,7 @@ class APrioriClassifier(AbstractClassifier) :
 
         return result
 
+#question 2.1.a
 def P2D_l(df, attr):
     # Créez un dictionnaire pour stocker les probabilités conditionnelles
     resultat = {}
@@ -99,4 +100,28 @@ def P2D_l(df, attr):
         # Ajoutez les probabilités conditionnelles au dictionnaire
         resultat[val_target] = prob_cond
 
-    return resultat           
+    return resultat 
+
+#question 2.1.b
+def P2D_p(df, attr):
+    resultat = {}
+
+    # Groupez le DataFrame par les valeurs de l'attribut
+    mondes = df.groupby(attr)
+
+    # Parcourir chaque valeur de l'attribut
+    for val_attr, group in mondes:
+        # Comptez le nombre de fois où chaque valeur de target apparaît dans le groupe
+        attr_counts = group['target'].value_counts().to_dict()
+
+        # Comptez le nombre total d'occurrences d'une valeur de target pour ce groupe
+        total_count = group['target'].count()
+
+        # Calculez les probabilités conditionnelles pour chaque valeur de target
+        prob_cond = {a: count / total_count for a, count in attr_counts.items()}
+
+        # Ajoutez les probabilités conditionnelles au dictionnaire
+        resultat[val_attr] = prob_cond
+
+    return resultat
+
