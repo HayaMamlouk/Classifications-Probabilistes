@@ -131,7 +131,21 @@ class ML2DClassifier(APrioriClassifier) :
 
     def estimClass(self, attrs):
         val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
-        target_0 = self.P2Dl[0].get(val_attr, 0) #P(attr | traget = 0)
-        target_1 = self.P2Dl[1].get(val_attr, 0) #P(attr | traget = 1)
+        target_0 = self.P2Dl[0][val_attr] #P(attr | traget = 0)
+        target_1 = self.P2Dl[1][val_attr] #P(attr | traget = 1)
         
         return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
+    
+class MAP2DClassifier(APrioriClassifier) :
+    def __init__(self, df, attr) :
+        super().__init__()
+        self.attr = attr
+        self.P2Dp = P2D_p(df, attr)
+
+    def estimClass(self, attrs):
+        val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
+        target_0 = self.P2Dp[val_attr][0] #P(traget = 0 | attr )
+        target_1 = self.P2Dp[val_attr][1] #P(traget = 1 | attr )
+        
+        return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
+
