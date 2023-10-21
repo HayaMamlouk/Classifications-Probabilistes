@@ -122,3 +122,16 @@ def P2D_p(df, attr):
         resultat[val_attr] = prob_cond
 
     return resultat
+
+class ML2DClassifier(APrioriClassifier) :
+    def __init__(self, df, attr) :
+        super().__init__()
+        self.attr = attr
+        self.P2Dl = P2D_l(df, attr)
+
+    def estimClass(self, attrs):
+        val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
+        target_0 = self.P2Dl[0].get(val_attr, 0) #P(attr | traget = 0)
+        target_1 = self.P2Dl[1].get(val_attr, 0) #P(attr | traget = 1)
+        
+        return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
