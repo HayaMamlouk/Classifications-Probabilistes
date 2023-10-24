@@ -226,8 +226,6 @@ def nbParamsIndep(df, attrs=None):
     if attrs is not None:
         df = df[attrs]
     
-    count_value = count_values(df)
-    
     nb_oct = 0
 
     for value in count_values(df).values():
