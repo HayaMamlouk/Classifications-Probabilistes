@@ -1,1 +1,2 @@
 - améliorer l'affichage dans nb_param q3.1 pour afficher les unités exactes
+- écrire les réponses aux question 3.3
