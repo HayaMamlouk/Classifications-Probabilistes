@@ -149,3 +149,89 @@ class MAP2DClassifier(APrioriClassifier) :
         
         return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
 
+def count_values(df):
+    """
+    Cette fonction cree un dictionnaire des éléments uniques, pour chaque attributcontenus dans la
+    dataframe donnée argument tel que cle = colomne et valeur = nombre valeurs uniques
+
+    Parameters
+    ----------
+    df: pd.dataframe
+        dataframe contenant n colonnes dont il faut identifier les valeurs
+    
+    Returns
+    -------
+    res: dict()  
+        dictionnaire contenant les valeurs uniques de chaque colonne 
+
+    """
+    res = {}
+    for cle, valeur in df.items():
+        temp = []
+        for val in valeur:
+            if val not in temp:
+                temp.append(val)
+        res[cle] = len(temp)
+    return res
+
+def nbParams(df, attrs=None):
+    """
+    Cette fonction affiche la taille mémoire de chaque colomne contenue dans df
+
+    Parameters
+    ----------
+    df: pd.dataframe
+        dataframe contenant les données de chaque attributs pour chaque élement
+        de la population
+    
+    attrs: list()
+        liste contenant les colomnes d'attributs que l'on veut examiner
+    
+    Returns
+    -------
+    nb_oct: nombre d'octets total pour le dataframe et les attributs correspondant
+    
+    """
+    if attrs is not None:
+        df = df[attrs]
+    
+    nb_oct = 1
+
+    for value in count_values(df).values():
+        nb_oct *= value
+    nb_oct *= 8
+
+    print(len(df.keys()), "variable(s) : ", nb_oct, " octets")
+
+    return nb_oct
+
+def nbParamsIndep(df, attrs=None):
+    """
+    Cette fonction affiche la taille mémoire nécessaire pour représentaer les tables de probabilités
+    en supposant l'indépendance des variables
+
+    Parameters
+    ----------
+     df: pd.dataframe
+        dataframe contenant les données de chaque attributs pour chaque élement
+        de la population
+    
+    attrs: list()
+        liste contenant les colomnes d'attributs que l'on veut examiner
+    
+    Returns
+    -------
+    nb_oct: nombre d'octets total pour le dataframe et les attributs correspondant
+    """
+    if attrs is not None:
+        df = df[attrs]
+    
+    nb_oct = 0
+
+    for value in count_values(df).values():
+        nb_oct += value
+    nb_oct *= 8
+
+    print(len(df.keys()), "variable(s) : ", nb_oct, " octets")
+
+    return nb_oct
