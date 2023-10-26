@@ -86,7 +86,7 @@ def P2D_l(df, attr):
     mondes = df.groupby('target')
 
     # Parcourir chaque valeur de "target"
-    for val_target, group in mondes:
+    for val_node, group in mondes:
         # Comptez le nombre de fois où chaque valeur d'attribut apparaît dans le groupe
         attr_counts = group[attr].value_counts().to_dict()
 
@@ -97,7 +97,7 @@ def P2D_l(df, attr):
         prob_cond = {a: count / total_count for a, count in attr_counts.items()}
 
         # Ajoutez les probabilités conditionnelles au dictionnaire
-        resultat[val_target] = prob_cond
+        resultat[val_node] = prob_cond
 
     return resultat
 
@@ -285,4 +285,47 @@ def drawNaiveBayes(df, attr):
     
     return drawGraph(res[:-1])
 
+def nbParamsNaiveBayes(df, node, attrs=None):
+    """
+    Cette fonction écrit la taille mémoire nécessaire pour représenter les tables 
+    de probabilité etant donné un dataframe
+
+    Parameters
+    ----------
+    df: pd.dataframe
+        dataframe contenant les données de chaque attributs pour chaque élement
+        de la population
+    
+    node : str
+        noeud target, parent de tous les attributs
+    
+    attrs: list()
+        liste contenant les colomnes d'attributs que l'on veut examiner
+    
+    Returns
+    -------
+    nb_oct: nombre d'octets total pour le dataframe et les attributs correspondant
+    
+    """
+    val_node = 0
+    nb_oct = 1
+    
+    if attrs is not None: 
+        old_df = df
+        df = df[attrs]
+        if len(attrs) == 0:
+            val_node = old_df[node].nunique()
+
+    for key,value in count_values(df).items():
+        if key == node:
+            val_node += value
+        else:
+            nb_oct += value
+
+    nb_oct *= val_node 
+    nb_oct *= 8
+
+    print(len(df.keys()), "variable(s) : ", nb_oct, " octets")
+
+    return nb_oct
     
