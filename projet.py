@@ -258,3 +258,31 @@ def nbParamsIndep(df, attrs=None):
 #
 # décomposition de la distribution a posteriori P(target | attr1, attr2, attr3, ....)
 #####
+
+def drawNaiveBayes(df, attr):
+    """
+    Cette fonction dessine le graphe qui représente un modèle naive bayes 
+
+    Parameters
+    ----------
+     df: pd.dataframe
+        dataframe contenant les données de chaque attributs pour chaque élement
+        de la population
+    
+    attr: str
+        chaîne de caractère contenant le nom de la colonne qui est la classe
+    
+    Returns
+    -------
+     Image
+      l'image représentant le graphe
+    """
+    str_columns = []
+    res = "" #str contenant la chaine
+    for cle, _ in df.items():
+        if cle != attr :
+            res += attr + "->" + cle + ";"
+    
+    return drawGraph(res[:-1])
+
+    
