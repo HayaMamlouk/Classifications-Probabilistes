@@ -235,3 +235,26 @@ def nbParamsIndep(df, attrs=None):
     print(len(df.keys()), "variable(s) : ", nb_oct, " octets")
 
     return nb_oct
+
+#####
+# Question 4.1: Exemples
+#####
+#
+#
+#
+#
+#####
+
+
+#####
+# Question 4.2: naive Bayes
+#####
+# décomposition de la vraisemblance P(attr2, attr2, attr3, ... | target)
+#
+#
+#
+#
+#
+#
+# décomposition de la distribution a posteriori P(target | attr1, attr2, attr3, ....)
+#####
