@@ -127,12 +127,12 @@ class ML2DClassifier(APrioriClassifier) :
     def __init__(self, df, attr) :
         super().__init__()
         self.attr = attr
-        self.P2Dl = P2D_l(df, attr)
+        self.Proba_cond = P2D_l(df, attr)
 
     def estimClass(self, attrs):
         val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
-        target_0 = self.P2Dl[0][val_attr] #P(attr | traget = 0)
-        target_1 = self.P2Dl[1][val_attr] #P(attr | traget = 1)
+        target_0 = self.Proba_cond[0][val_attr] #P(attr | traget = 0)
+        target_1 = self.Proba_cond[1][val_attr] #P(attr | traget = 1)
         
         return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
     
@@ -234,13 +234,13 @@ def nbParamsIndep(df, attrs=None):
 
     print(len(df.keys()), "variable(s) : ", nb_oct, " octets")
 
-    return nb_oct
+    return 
 
 #####
 # Question 4.1: Exemples
 #####
-#
-#
+# completement independants : que des sommets, pas d'arcs
+# sans independances : chaque sommet est relié a tous les autres sommets
 #
 #
 #####
@@ -251,13 +251,24 @@ def nbParamsIndep(df, attrs=None):
 #####
 # décomposition de la vraisemblance P(attr2, attr2, attr3, ... | target)
 #
-#
-#
+# P(attr1, attr2, attr3∣target) = P(attr1∣target)×P(attr2∣target)×P(attr3∣target) 
+# 
 #
 #
 #
 # décomposition de la distribution a posteriori P(target | attr1, attr2, attr3, ....)
-#####
+# La distribution a posteriori  P(target} |attr1, attr2, attr3, ...) est décomposée en utilisant le théorème de Bayes. La formule de Bayes est la suivante :
+#
+# P(target |attrs) =  ( P(attrs|target) x P(target) ) / P (attrs)
+#
+# Dans le contexte de la classification naïve de Bayes, on peut simplifier cette formule en utilisant l'hypothèse naïve d'indépendance conditionnelle des attributs :
+#                                  n
+# P(target |attrs)  ∝ P(target) x ∏i=1 P(attri|target)
+# P(target |attrs)  = 1/z x P(target) x ∏i=1 P(attri|target) a
+# avec Z=∑target P(target)⋅ ∏i P(attri∣target)
+# Cela signifie que la distribution a posteriori est proportionnelle au produit de la probabilité a priori de la classe \( P(\text{target}) \) et du produit des probabilités conditionnelles de chaque attribut étant donné la classe.
+# #####
+
 
 def drawNaiveBayes(df, attr):
     """
@@ -277,7 +288,6 @@ def drawNaiveBayes(df, attr):
      Image
       l'image représentant le graphe
     """
-    str_columns = []
     res = "" #str contenant la chaine
     for cle, _ in df.items():
         if cle != attr :
@@ -289,7 +299,6 @@ def nbParamsNaiveBayes(df, node, attrs=None):
     """
     Cette fonction écrit la taille mémoire nécessaire pour représenter les tables 
     de probabilité etant donné un dataframe
-
     Parameters
     ----------
     df: pd.dataframe
@@ -300,7 +309,7 @@ def nbParamsNaiveBayes(df, node, attrs=None):
         noeud target, parent de tous les attributs
     
     attrs: list()
-        liste contenant les colomnes d'attributs que l'on veut examiner
+        liste contenant les colonnes d'attributs que l'on veut examiner
     
     Returns
     -------
@@ -309,7 +318,7 @@ def nbParamsNaiveBayes(df, node, attrs=None):
     """
     val_node = 0
     nb_oct = 1
-    
+
     if attrs is not None: 
         old_df = df
         df = df[attrs]
@@ -328,4 +337,90 @@ def nbParamsNaiveBayes(df, node, attrs=None):
     print(len(df.keys()), "variable(s) : ", nb_oct, " octets")
 
     return nb_oct
+
+class MLNaiveBayesClassifier(APrioriClassifier) :
+    def __init__(self, df) :
+        super().__init__()
+        self.df = df
+        self.p2dl = {} 
+        for attr in df.columns:
+            if(attr != 'target') :
+                self.p2dl[attr]= P2D_l(self.df, attr)
+        
+
+    def estimProbas(self, attrs):
+        """
+        Calcule la vraisemblance en utilisant l'hypothese du naive Bayes
+
+        :param attrs: Un dictionnaire contenant les attributs d'un patient
+        :return: Un dictionnaire contenant les valeurs de la vraisemblance
+        """
+        probas = {0: 1, 1: 1.0}
+
+        for cle, val in attrs.items():
+            if(cle != 'target') :
+                proba_cond = self.p2dl[cle]
+
+                target_0 = proba_cond[0].get(val, 0)  # P(attr | target = 0)
+                target_1 = proba_cond[1].get(val, 0)  # P(attr | target = 1)
+
+                probas[0] *= target_0   #P(attr1 | target == 0 ) x P(attr2 | target == 0) ...
+                probas[1] *= target_1   #P(attr1 | target == 1) x P(attr2 | target == 1) ...
+        return probas
+
+
+    def estimClass(self, attrs):
+        """
+        Choisi la classe de target avec la probabilité la plus grande en utilisant le maximum de vraisemblance
+        :param attrs: Un dictionnaire contenant les attributs d'un patient
+        :return: la classe de target estimée
+        """
+        probas = self.estimProbas(attrs)
+        return 0 if probas[0] >= probas[1] else 1
+
     
+class MAPNaiveBayesClassifier(APrioriClassifier) :
+    def __init__(self, df) :
+        super().__init__()
+        self.df = df
+        self.p2dl = {}
+        for attr in df.columns:
+            if(attr != 'target') :
+                self.p2dl[attr]= P2D_l(self.df, attr)
+        
+        
+
+    def estimProbas(self, attrs):
+        """
+        Calcule la vraisemblance en utilisant l'hypothese du naive Bayes
+
+        :param attrs: Un dictionnaire contenant les attributs d'un patient
+        :return: Un dictionnaire contenant les valeurs de la vraisemblance
+        """
+        p_target = self.df['target'].value_counts(normalize=True).to_dict()
+        probas = {0: p_target[0], 1: p_target[1]}
+
+        for cle, val in attrs.items():
+            if(cle != 'target') :
+                proba_cond = self.p2dl[cle]
+
+                target_0 = proba_cond[0].get(val, 0)  # P(attr | target = 0)
+                target_1 = proba_cond[1].get(val, 0)  # P(attr | target = 1)
+
+                probas[0] *= target_0   #P(attr1 | target == 0 ) x P(attr2 | target == 0) ...
+                probas[1] *= target_1   #P(attr1 | target == 1) x P(attr2 | target == 1) ...
+
+            z = probas[0] + probas[1]
+            probas[0] *= 1/z if z != 0 else 1
+            probas[1] *= 1/z if z != 0 else 1
+        return probas
+
+
+    def estimClass(self, attrs):
+        """
+        Choisi la classe de target avec la probabilité la plus grande utilisant le maximum a posteriori
+        :param attrs: Un dictionnaire contenant les attributs d'un patient
+        :return: la classe de target estimée
+        """
+        probas = self.estimProbas(attrs)
+        return 0 if probas[0] >= probas[1] else 1
