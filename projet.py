@@ -507,3 +507,44 @@ class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
                 res += "{}->{};".format('target', attr)
         res = res[:-1]
         return drawGraph(res)
+
+#####
+# Question 6.1: 
+#####
+# Chaque point dans le graphique (précision, rappel) représente un classifieur, où l'abscisse (précision) correspond au taux de vrais positifs 
+# parmi les vrais positifs et les faux positifs (atteignant sa valeur maximale de 1 lorsque le nombre de faux positifs est nul), 
+# et l'ordonnée (rappel) correspond au taux de vrais positifs parmi les vrais positifs et les faux négatifs (atteignant sa valeur maximale 
+# de 1 lorsque le nombre de faux négatifs est nul). Le point idéal se situe dans le coin supérieur droit du graphique, indiquant une
+# précision et un rappel maximaux, signifiant l'absence totale de faux positifs et de faux négatifs. En comparant les différents classifieurs,
+# nous évaluons leur performance en examinant la proximité de chaque point au coin supérieur droit, où une proximité accrue indique 
+# une meilleure performance en termes de précision et de rappel.
+#####
+
+def mapClassifiers(dic, df) :
+    """
+    représente graphiquement les classifiers dans l'espace (précision,rappel).
+    :param dic: un dictionnaire de {nom:instance de classifier}
+    :param df: un dataframe
+    """
+    plt.figure(figsize=(6,6)) # Inirialisation du graphe
+
+    for key, val in dic.items() :
+        stats = val.statsOnDF(df)
+        precision = stats['Précision']
+        rappel = stats['Rappel']
+        plt.scatter(precision, rappel , marker='x', color='red')
+        plt.text(precision + 0.0015, rappel + 0.0015, key, fontsize=8, ha='left', va='bottom')
+    plt.show
+
+#####
+# Question 6.3: 
+#####
+# Pour la dataframe train, le classifieur MAPNaiveBayes, utilisant des estimations a priori avec l'hypothèse du naive Bayes, 
+# semble être le plus performant, étant le plus proche du coin supérieur droit sur le graphique (précision, rappel). 
+# Le classifieur ReducedMAPNaiveBayes est également compétitif en termes de performances.
+# Cependant, en analysant la dataframe de test, aucun classifieur ne semble être proche du coin supérieur droit. 
+# Les classifieurs MLNaiveBayes et ReducedMLNaiveBayes montrent une constance dans la performance, avec une précision élevée indiquant 
+# peu de faux positifs. Cependant, le rappel reste relativement bas, suggérant la présence de faux négatifs. 
+# Malgré cela, les classifieurs MAPNaiveBayes et ReducedMAPNaiveBayes demeurent plus performants. Bien que le taux de faux positifs soit 
+# légèrement plus élevé, le rappel est également plus élevé, démontrant une meilleure capacité à identifier les vrais positifs."
+#####
