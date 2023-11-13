@@ -439,7 +439,8 @@ def isIndepFromTarget(df, attr, x):
 class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
     def __init__(self, df, x):
         self.attr_indep = self.attrs_minimisees(df, x)
-        super().__init__(df[self.attr_indep])
+        self.df = df[self.attr_indep]
+        super().__init__(self.df)
         
     def attrs_minimisees(self, df, x):
         attr_indep = []
@@ -447,6 +448,20 @@ class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
             if attr == 'target' or not isIndepFromTarget(df, attr, x):  #on supprime les noeuds indépendants de target
                 attr_indep.append(attr)
         return attr_indep
+    
+    def estimClass(self, attrs):
+        new_attrs = {}
+        for cle, val in attrs.items():
+            if cle in self.attr_indep and cle != 'target':
+                new_attrs[cle] = val
+        return super().estimClass(new_attrs)
+    
+    def estimProbas(self, attrs):
+        new_attrs = {}
+        for cle, val in attrs.items():
+            if cle in self.attr_indep and cle != 'target':
+                new_attrs[cle] = val
+        return super().estimProbas(new_attrs)
     
     def draw(self):
         res = ''
@@ -460,15 +475,30 @@ class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
 class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
     def __init__(self, df, x):
         self.attr_indep = self.attrs_minimisees(df, x)
-        super().__init__(df[self.attr_indep])
-
+        self.df = df[self.attr_indep]
+        super().__init__(self.df)
+        
     def attrs_minimisees(self, df, x):
         attr_indep = []
-        for key in df.keys():
-            if key == 'target' or not isIndepFromTarget(df, key, x):  #on supprime les noeuds indépendants de target
-                attr_indep.append(key)
+        for attr in df.keys():
+            if attr == 'target' or not isIndepFromTarget(df, attr, x):  #on supprime les noeuds indépendants de target
+                attr_indep.append(attr)
         return attr_indep
-
+    
+    def estimClass(self, attrs):
+        new_attrs = {}
+        for cle, val in attrs.items():
+            if cle in self.attr_indep and cle != 'target':
+                new_attrs[cle] = val
+        return super().estimClass(new_attrs)
+    
+    def estimProbas(self, attrs):
+        new_attrs = {}
+        for cle, val in attrs.items():
+            if cle in self.attr_indep and cle != 'target':
+                new_attrs[cle] = val
+        return super().estimProbas(new_attrs)
+    
     def draw(self):
         res = ''
         attrs = self.attr_indep.copy()
