@@ -3,7 +3,8 @@
 
 import pandas as pd
 from utils import *
-
+from scipy.stats import chi2_contingency
+from scipy.stats import chi2
 def getPrior(data):
     """
     Calcule la probabilité a priori de la classe data ainsi que l'intervalle de confiance à 95% pour l'estimation de cette probabilité.
@@ -424,3 +425,55 @@ class MAPNaiveBayesClassifier(APrioriClassifier) :
         """
         probas = self.estimProbas(attrs)
         return 0 if probas[0] >= probas[1] else 1
+    
+
+def isIndepFromTarget(df, attr, x):
+    tab_contingence = pd.crosstab(df[attr], df['target']) #table de contigence contenant les valeurs
+    _, p, _, _ = chi2_contingency(tab_contingence) # Effectuer le test d'indépendance
+    if p < x:
+        return False
+    else:
+        return True
+
+
+class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
+    def __init__(self, df, x):
+        self.attr_indep = self.attrs_minimisees(df, x)
+        super().__init__(df[self.attr_indep])
+        
+    def attrs_minimisees(self, df, x):
+        attr_indep = []
+        for attr in df.keys():
+            if attr == 'target' or not isIndepFromTarget(df, attr, x):  #on supprime les noeuds indépendants de target
+                attr_indep.append(attr)
+        return attr_indep
+    
+    def draw(self):
+        res = ''
+        attrs = self.attr_indep.copy()
+        for attr in attrs:
+            if attr != "target":
+                res += "{}->{};".format('target', attr)
+        res = res[:-1]
+        return drawGraph(res)
+    
+class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
+    def __init__(self, df, x):
+        self.attr_indep = self.attrs_minimisees(df, x)
+        super().__init__(df[self.attr_indep])
+
+    def attrs_minimisees(self, df, x):
+        attr_indep = []
+        for key in df.keys():
+            if key == 'target' or not isIndepFromTarget(df, key, x):  #on supprime les noeuds indépendants de target
+                attr_indep.append(key)
+        return attr_indep
+
+    def draw(self):
+        res = ''
+        attrs = self.attr_indep.copy()
+        for attr in attrs:
+            if attr != "target":
+                res += "{}->{};".format('target', attr)
+        res = res[:-1]
+        return drawGraph(res)
