@@ -9,6 +9,14 @@ from scipy.stats import chi2
 def getPrior(data):
     """
     Calcule la probabilité a priori de la classe data ainsi que l'intervalle de confiance à 95% pour l'estimation de cette probabilité.
+    
+    Parameters
+    ----------
+    data: dataframe
+    
+    Returns
+    -------
+    result: dictionnaire contenant l'estimation des malades et les bornes de l'intervalle de confiance
     """
     # NB : Les données sont déja chargé dans le ipnyb
 
@@ -40,16 +48,37 @@ def getPrior(data):
 
 
 class APrioriClassifier(AbstractClassifier) :
+    """
+    Un classifier a priori qui estime très simplement la classe de chaque individu par la classe majoritaire.
+    """
+
     def __init__(self) :
         super().__init__()
 
     def estimClass(self, attrs):
-        """Renvoie la classe majoritaire (malade == 1)"""
+        """Renvoie la classe majoritaire (malade == 1)
+       
+        Parameters
+        ----------
+        attrs: vecteur d'attributs 
+
+        Returns
+        -------
+        La classe majoritaire
+        """
         return 1
 
     def statsOnDF(self, df):
         """
         à partir d'un pandas.dataframe, calcule les taux d'erreurs de classification et rend un dictionnaire.
+        
+        Parameters
+        ----------
+        df: dataframe
+        
+        Returns
+        -------
+        result: dictionnaire contenant VP, VN, FP, FN, précision et rappel
         """
         VP, VN, FP, FN = 0, 0, 0, 0,
         for _, row in df.iterrows() :
@@ -81,6 +110,18 @@ class APrioriClassifier(AbstractClassifier) :
         return result
 
 def P2D_l(df, attr):
+    """
+    calcule la probabilité P(attr|target)
+    
+    Parameters
+    ----------
+    df: dataframe dans laquelle on calcule la probabilité
+    attr: attribut étudié
+    
+    Returns
+    -------
+    resultat: un dictionnaire asssociant à la valeur t un dictionnaire associant à la valeur a la probabilité P(attr=a|target=t)
+    """
     # Créez un dictionnaire pour stocker les probabilités conditionnelles
     resultat = {}
 
@@ -104,6 +145,18 @@ def P2D_l(df, attr):
     return resultat
 
 def P2D_p(df, attr):
+    """
+    calcule la probabilité P(target|attr)
+    
+    Parameters
+    ----------
+    df: dataframe dans laquelle on calcule la probabilité
+    attr: attribut étudié
+    
+    Returns
+    -------
+    resultat: un dictionnaire asssociant à la valeur a un dictionnaire associant à la valeur t la probabilité P(target=t|attr=a)
+    """
     resultat = {}
 
     # Groupez le DataFrame par les valeurs de l'attribut
@@ -126,12 +179,26 @@ def P2D_p(df, attr):
     return resultat
 
 class ML2DClassifier(APrioriClassifier) :
+    """
+    Un classifier qui utilise le principe de maximum de vraisemblance pour estimer la classe d'un individu
+    """
     def __init__(self, df, attr) :
         super().__init__()
         self.attr = attr
         self.Proba_cond = P2D_l(df, attr)
 
     def estimClass(self, attrs):
+        """
+        sélectionne comme estimation de la classe de l'individu la valeur t=0 ou t=1 maximisant la probabilité P(attr=a|target=t)
+        
+        Parameters
+        ----------
+        attrs: un vecteur d'attributs
+        
+        Returns
+        -------
+        la classe estimée
+        """
         val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
         target_0 = self.Proba_cond[0][val_attr] #P(attr | traget = 0)
         target_1 = self.Proba_cond[1][val_attr] #P(attr | traget = 1)
@@ -139,22 +206,52 @@ class ML2DClassifier(APrioriClassifier) :
         return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
     
 class MAP2DClassifier(APrioriClassifier) :
+    """
+    Un classifier qui utilise le principe de maximum a posteriori pour estimer la classe d'un individu
+    """
     def __init__(self, df, attr) :
         super().__init__()
         self.attr = attr
         self.P2Dp = P2D_p(df, attr)
 
     def estimClass(self, attrs):
+        """
+        sélectionne comme estimation de la classe de l'individu la valeur t=0 ou t=1 maximisant la probabilité P(target=t|attr=a)
+        
+        Parameters
+        ----------
+        attrs: un vecteur d'attributs
+        
+        Returns
+        -------
+        la classe estimée
+        """
         val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
         target_0 = self.P2Dp[val_attr][0] #P(traget = 0 | attr )
         target_1 = self.P2Dp[val_attr][1] #P(traget = 1 | attr )
         
         return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
 
+#####
+# Question 2.4 : comparaison
+#####
+# Jusqu'ici, nous préférons le classifieur MAP2DClassifier. En effet, ce classifieur possède plus de précisions:
+#   -> la classe donnée est calculée en prenant compte des données de l'attribut, 
+#   et la probabilité de P(target | attribut) est moins sensible au données aberrantes que P(attribut | target). 
+#   Celà s'explique par le fait que P(target | attribut) se concentre sur la distribution des classes en fonction
+#   des différentes valeurs de l'attribut.
+#   -> en comparaison, une approche limitée aux classes 0 et 1 néglige la distribution des données
+#   
+# Dans le cadre de la comparaison des résultats, le choix entre les classifiers dépend des priorités spécifiques en matière de précision et de rappel.
+# Si l'accent est mis sur le rappel et que la minimisation des faux négatifs est crucial, le MAP2DClassifier pourrait être préféré. En effet, il démontre une performance légèrement supérieure en termes de rappel dans nos résultats.
+# D'un autre côté, si la précision est une considération majeure et que la réduction des faux positifs est primordiale, le ML2DClassifier pourrait être privilégié, en dépit d'une légère baisse du rappel comparé au MAP2DClassifier.
+# En résumé, le choix entre les deux classifieurs repose sur la pondération des priorités entre précision et rappel. 
+# Dans notre contexte, où la détection de maladies cardiaques est cruciale, la minimisation des faux négatifs s'avère être une priorité primordiale. C'est pourquoi nous favorisons le MAP2DClassifier.
+
 def count_values(df):
     """
-    Cette fonction cree un dictionnaire des éléments uniques, pour chaque attributcontenus dans la
-    dataframe donnée argument tel que cle = colomne et valeur = nombre valeurs uniques
+    Cette fonction crée un dictionnaire des éléments uniques, pour chaque attribut contenu dans la
+    dataframe donnée, tel que cle->colonne et valeur->nombre valeurs uniques
 
     Parameters
     ----------
@@ -178,7 +275,7 @@ def count_values(df):
 
 def nbParams(df, attrs=None):
     """
-    Cette fonction affiche la taille mémoire de chaque colomne contenue dans df
+    Cette fonction affiche la taille mémoire de chaque colonne contenue dans df
 
     Parameters
     ----------
@@ -187,7 +284,7 @@ def nbParams(df, attrs=None):
         de la population
     
     attrs: list()
-        liste contenant les colomnes d'attributs que l'on veut examiner
+        liste contenant les colonnes d'attributs que l'on veut examiner
     
     Returns
     -------
@@ -239,12 +336,48 @@ def nbParamsIndep(df, attrs=None):
     return 
 
 #####
+# Question 3.3.a : preuve
+#####
+# On cherche a prouver que si A est indépendant de C sachant B, on peut écrire la loi jointe :
+# P(A,B,C)=P(A)*P(B|A)*P(C|B)
+#
+# Formellement, A est indépendant de C sachant B, peut être exprimé comme P(A|B,C) = P(A|B).
+#
+# La loi jointe des variables A, B, et C, qui peut être exprimée de manière générale comme suit :
+# P(A,B,C) = P(A|B,C).P(B|C).P(C)
+#
+# Si A est indépendant de C sachant B, alors P(A|B,C)=P(A|B), et l'équation ci-dessus devient :
+# P(A,B,C) = P(A|B).P(B|C).P(C)
+# Cela peut être réécrit en utilisant la définition de la probabilité conditionnelle :
+# P(A,B,C) = P(A).P(B|A).P(C|B)
+#####
+
+
+#####
+# Question 3.3.b : complexité en indépendance partielle
+#####
+# Sans l'utilisation de l'indépendance conditionnelle, le nombre total de paramètres serait simplement le produit du nombre de valeurs uniques de chaque variable. 
+# Si chaque variable A, B, et C a 5 valeurs uniques, le nombre total de paramètres serait 5x5x5 = 125.
+#
+# Avec l'utilisation de l'indépendance conditionnelle, si l'indépendance partielle de A et C sachant B est exploitée, cela permettrait de représenter la distribution de manière plus compacte. 
+# Cela revient à stocker les probabilités marginales de A, B, et C, ainsi que les probabilités conditionnelles (P(B|A)\) et P(C|B). 
+# Dans ce cas, le nombre total de paramètres serait 5 + 5 + 5 + 5 + 5 = 25, ce qui représente une réduction significative de la taille mémoire par rapport à la représentation sans l'utilisation de l'indépendance conditionnelle.
+#####
+
+
+#####
 # Question 4.1: Exemples
 #####
-# completement independants : que des sommets, pas d'arcs
-# sans independances : chaque sommet est relié a tous les autres sommets
+# Complètement indépendantes : la représentation graphique est définie par les sommets uniquement, sans présence d'arcs. 
+# Cette configuration est illustrée par le graphe horizontal où les variables A, B, C, D, et E sont représentées par des sommets sans liens entre eux, 
+# ce qui exprime leur indépendance les unes des autres. (utils.drawGraphHorizontal("A;B;C;D;E"))
 #
-#
+# Sans indépendances : chaque variable est reliée à toutes les autres, formant un ensemble de dépendances mutuelles. 
+# Cela se traduit graphiquement par la présence d'arcs dirigés entre chaque paire de variables, représentant les relations de dépendance. 
+# Par exemple, dans le graphe orienté, A est relié à B, A à C, A à D, et A à E.
+# Et B est relié à A, B à C, B à D, et B à E.
+# Et C est relié à A, C à B, C à D, et C à E, etc..
+# Il faut donc passer en parametres à drawGraphHorizontal la chaîne représentant tous ces arcs
 #####
 
 
