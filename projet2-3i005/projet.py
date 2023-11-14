@@ -384,24 +384,21 @@ def nbParamsIndep(df, attrs=None):
 #####
 # Question 4.2: naive Bayes
 #####
-# décomposition de la vraisemblance P(attr2, attr2, attr3, ... | target)
+# En utilisant le modèle Naive Bayes :
 #
-# P(attr1, attr2, attr3∣target) = P(attr1∣target)×P(attr2∣target)×P(attr3∣target) 
+# Décomposition de la vraisemblance P(attr2,attr2,attr3,...|target)
+# P(attr1,attr2,attr3∣target) = P(attr1∣target) × P(attr2∣target) × P(attr3∣target) 
 # 
-#
-#
-#
-# décomposition de la distribution a posteriori P(target | attr1, attr2, attr3, ....)
-# La distribution a posteriori  P(target} |attr1, attr2, attr3, ...) est décomposée en utilisant le théorème de Bayes. La formule de Bayes est la suivante :
-#
+# Décomposition de la distribution a posteriori P(target|attr1,attr2,attr3,...) :
+# La distribution a posteriori  P(target|attr1,attr2,attr3,..) est décomposée en utilisant le théorème de Bayes. La formule de Bayes est la suivante :
 # P(target |attrs) =  ( P(attrs|target) x P(target) ) / P (attrs)
 #
 # Dans le contexte de la classification naïve de Bayes, on peut simplifier cette formule en utilisant l'hypothèse naïve d'indépendance conditionnelle des attributs :
 #                                  n
 # P(target |attrs)  ∝ P(target) x ∏i=1 P(attri|target)
-# P(target |attrs)  = 1/z x P(target) x ∏i=1 P(attri|target) a
-# avec Z=∑target P(target)⋅ ∏i P(attri∣target)
-# Cela signifie que la distribution a posteriori est proportionnelle au produit de la probabilité a priori de la classe \( P(\text{target}) \) et du produit des probabilités conditionnelles de chaque attribut étant donné la classe.
+# P(target |attrs)  = 1/z x P(target) x ∏i=1 P(attri|target) 
+# avec Z = ∑target P(target)⋅ ∏i P(attri∣target)
+# Cela signifie que la distribution a posteriori est proportionnelle au produit de la probabilité a priori de la classe P(target) et du produit des probabilités conditionnelles de chaque attribut étant donné la classe.
 # #####
 
 
