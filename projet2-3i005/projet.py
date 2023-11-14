@@ -471,6 +471,9 @@ def nbParamsNaiveBayes(df, node, attrs=None):
     return nb_oct
 
 class MLNaiveBayesClassifier(APrioriClassifier) :
+    """
+    Un classifier qui utilise le principe de maximum de vraisemblance pour estimer la classe d'un individu en utilisant l'hypothèse du Naïve Bayes.
+    """
     def __init__(self, df) :
         super().__init__()
         self.df = df
@@ -484,8 +487,14 @@ class MLNaiveBayesClassifier(APrioriClassifier) :
         """
         Calcule la vraisemblance en utilisant l'hypothese du naive Bayes
 
-        :param attrs: Un dictionnaire contenant les attributs d'un patient
-        :return: Un dictionnaire contenant les valeurs de la vraisemblance
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner
+
+        Returns
+        ----------
+        probas: Un dictionnaire contenant les valeurs de la vraisemblance 
         """
         probas = {0: 1, 1: 1.0}
 
@@ -504,14 +513,23 @@ class MLNaiveBayesClassifier(APrioriClassifier) :
     def estimClass(self, attrs):
         """
         Choisi la classe de target avec la probabilité la plus grande en utilisant le maximum de vraisemblance
-        :param attrs: Un dictionnaire contenant les attributs d'un patient
-        :return: la classe de target estimée
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner
+
+        Returns
+        ----------
+        la classe de target estimée
         """
         probas = self.estimProbas(attrs)
         return 0 if probas[0] >= probas[1] else 1
 
     
 class MAPNaiveBayesClassifier(APrioriClassifier) :
+    """
+    Un classifier qui utilise le principe de maximum a posteriori pour estimer la classe d'un individu en utilisant l'hypothèse du Naïve Bayes.
+    """
     def __init__(self, df) :
         super().__init__()
         self.df = df
@@ -524,10 +542,16 @@ class MAPNaiveBayesClassifier(APrioriClassifier) :
 
     def estimProbas(self, attrs):
         """
-        Calcule la vraisemblance en utilisant l'hypothese du naive Bayes
+        Calcule la probabilité a posteriori en utilisant l'hypothese du naive Bayes
 
-        :param attrs: Un dictionnaire contenant les attributs d'un patient
-        :return: Un dictionnaire contenant les valeurs de la vraisemblance
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner
+
+        Returns
+        ----------
+        probas: Un dictionnaire contenant les valeurs a posteriori
         """
         p_target = self.df['target'].value_counts(normalize=True).to_dict()
         probas = {0: p_target[0], 1: p_target[1]}
@@ -550,9 +574,15 @@ class MAPNaiveBayesClassifier(APrioriClassifier) :
 
     def estimClass(self, attrs):
         """
-        Choisi la classe de target avec la probabilité la plus grande utilisant le maximum a posteriori
-        :param attrs: Un dictionnaire contenant les attributs d'un patient
-        :return: la classe de target estimée
+        Choisi la classe de target avec la probabilité la plus grande en utilisant le maximum a posteriori
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner
+
+        Returns
+        ----------
+        la classe de target estimée
         """
         probas = self.estimProbas(attrs)
         return 0 if probas[0] >= probas[1] else 1
