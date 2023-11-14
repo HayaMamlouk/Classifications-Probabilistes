@@ -5,6 +5,8 @@ import pandas as pd
 from utils import *
 from scipy.stats import chi2_contingency
 from scipy.stats import chi2
+
+
 def getPrior(data):
     """
     Calcule la probabilité a priori de la classe data ainsi que l'intervalle de confiance à 95% pour l'estimation de cette probabilité.
@@ -145,10 +147,22 @@ class MAP2DClassifier(APrioriClassifier) :
 
     def estimClass(self, attrs):
         val_attr = attrs[self.attr]  #la valeur de l'attribut étudié du patient 
-        target_0 = self.P2Dp[val_attr][0] #P(traget = 0 | attr )
-        target_1 = self.P2Dp[val_attr][1] #P(traget = 1 | attr )
+        target_0 = self.P2Dp[val_attr][0] #P(target = 0 | attr )
+        target_1 = self.P2Dp[val_attr][1] #P(target = 1 | attr )
         
         return 0 if target_0 >= target_1 else 1 #rend le target avec la probabilté la plus grde, 0 si égales
+
+#####
+# Question 2.4 : comparaison
+#####
+# Jusqu'ici, nous préférons le classifieur MAP2DClassifier. En effet, ce classifieur possède
+# plus de précisions:
+#   -> la classe donnée est calculée en prenant compte des données de l'attribut, 
+#   et la probabilité de P(target | attribut) est moins sensible au données aberrantes que P(attribut | target). 
+#   Celà s'explique par le fait que P(target | attribut) se concentre sur la distribution des classes en fonction
+#   des différentes valeurs de l'attribut.
+#   -> en comparaison, une approche limitée aux classes 0 et 1 néglige la distribution des données
+#####
 
 def count_values(df):
     """
