@@ -525,7 +525,6 @@ class MLNaiveBayesClassifier(APrioriClassifier) :
         probas = self.estimProbas(attrs)
         return 0 if probas[0] >= probas[1] else 1
 
-    
 class MAPNaiveBayesClassifier(APrioriClassifier) :
     """
     Un classifier qui utilise le principe de maximum a posteriori pour estimer la classe d'un individu en utilisant l'hypothèse du Naïve Bayes.
@@ -588,6 +587,22 @@ class MAPNaiveBayesClassifier(APrioriClassifier) :
         return 0 if probas[0] >= probas[1] else 1
     
 def isIndepFromTarget(df, attr, x):
+    """
+    Verifie si une variable est independante à target au seuil x
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+        ensemble des données que l'on doit parcourir pour déterminer une relation d'indépendance entre attr et target
+    
+    x: float
+        seuil d'indépendance de l'attribut à targe
+
+    Returns
+    ----------
+    bool: 
+        True si attr et target sont indépendantes au seuil x et False sinon 
+    """
     tab_contingence = pd.crosstab(df[attr], df['target']) #table de contigence contenant les valeurs
     _, p, _, _ = chi2_contingency(tab_contingence) # Effectuer le test d'indépendance
     if p < x:
@@ -596,12 +611,45 @@ def isIndepFromTarget(df, attr, x):
         return True
 
 class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
+    """
+    Un classifier qui utilise le principe de maximum de vraisemblance pour estimer la classe d'un individu 
+    en utilisant l'hypothèse du Naïve Bayes uniquement sur les attributs dépendant à target à un seuil x.
+    """
+
     def __init__(self, df, x):
+        """
+        Constructeur de la classe faisant appel au constructeur de la classe mère MLNaiveBayesClassifier
+
+        Attributes
+        ----------
+        attr_indep : list()
+            Liste des attributs dépendants de target calculés graĉe à la fonction attrs_minimisees
+
+        df : pd.dataframe
+            Nouveau dataframe issu de la base tel qu'on ne considère que les colonnes des attributs dépendants
+            de target
+        """
         self.attr_indep = self.attrs_minimisees(df, x)
         self.df = df[self.attr_indep]
         super().__init__(self.df)
         
     def attrs_minimisees(self, df, x):
+        """
+        Retire d'une dataframe les éléments indépendants et retourne la liste des attributs restants
+
+        Parameters
+        ----------
+        df : pd.dataframe
+            Dataframe à parcourir et filtrer pour ne garder que les attributs dépendants à target
+        
+        x : float
+            seuil d'indépendance à target que l'on vérifie pour chaque attribut
+        
+        Returns
+        ----------
+        attr_indep : list()
+            liste contenant les attributs dépendants à target
+        """
         attr_indep = []
         for attr in df.keys():
             if attr == 'target' or not isIndepFromTarget(df, attr, x):  #on supprime les noeuds indépendants de target
@@ -609,6 +657,22 @@ class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
         return attr_indep
     
     def estimClass(self, attrs):
+        """
+        Choisit la classe de target avec la probabilité la plus grande en utilisant le maximum de vraisemblance
+        des paramètres dépendantes à target
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner qui va être filtrée
+            pour ne contenir que les éléments dépendants target
+
+        Returns
+        ----------
+        super().estimClass(new_attrs): int
+            la classe de target estimée en faisant appel à la méthode de la classe mère sur les attributs
+            filtrés
+        
+        """
         new_attrs = {}
         for cle, val in attrs.items():
             if cle in self.attr_indep and cle != 'target':
@@ -616,6 +680,22 @@ class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
         return super().estimClass(new_attrs)
     
     def estimProbas(self, attrs):
+        """
+        Calcule la probabilité de vraisemblance en utilisant l'hypothese du naive Bayes sur les attributs 
+        dépendantes de target
+
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner
+
+        Returns
+        ----------
+        super().estimProbas(new_attrs) : dict()
+            dictionnaire contenant les valeurs issues de la vraisemblance en utilisant P(attr | target)
+            tels que les attributs soient toutes dépendantes à target
+        """
+    
         new_attrs = {}
         for cle, val in attrs.items():
             if cle in self.attr_indep and cle != 'target':
@@ -623,6 +703,14 @@ class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
         return super().estimProbas(new_attrs)
     
     def draw(self):
+        """
+        Dessine un graphe à partir d'une chaine décrivant les arcs des attributs dépendants de target 
+
+        Returns
+        ----------
+        drawGraph(res) : Image
+            image représentant le graphe tel que res contient la chaine des relations entre chaque attributs
+        """
         res = ''
         attrs = self.attr_indep.copy()
         for attr in attrs:
@@ -632,12 +720,41 @@ class ReducedMLNaiveBayesClassifier(MLNaiveBayesClassifier):
         return drawGraph(res)
     
 class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
+    """
+        Un classifieur qui utilise le principe de maximum a posteriori pour estimer la classe d'un individu 
+        en utilisant l'hypothèse du Naïve Bayes uniquement sur les attributs dépendant à target à un seuil x.
+
+    """
     def __init__(self, df, x):
+        """
+        Constructeur de la classe faisant appel au constructeur de la classe mère MAPNaiveBayesClassifier
+
+        Attributes
+        ----------
+        attr_indep : list()
+            Liste des attributs dépendants de target calculés graĉe à la fonction attrs_minimisees
+
+        df : pd.dataframe
+            Nouveau dataframe issu de la base tel qu'on ne considère que les colonnes des attributs dépendants
+            de target
         self.attr_indep = self.attrs_minimisees(df, x)
         self.df = df[self.attr_indep]
         super().__init__(self.df)
+    """ 
         
     def attrs_minimisees(self, df, x):
+        """
+        Constructeur de la classe faisant appel au constructeur de la classe mère MLNaiveBayesClassifier
+
+        Attributes
+        ----------
+        attr_indep : list()
+            Liste des attributs dépendants de target calculés graĉe à la fonction attrs_minimisees
+
+        df : pd.dataframe
+            Nouveau dataframe issu de la base tel qu'on ne considère que les colonnes des attributs dépendants
+            de target
+        """
         attr_indep = []
         for attr in df.keys():
             if attr == 'target' or not isIndepFromTarget(df, attr, x):  #on supprime les noeuds indépendants de target
@@ -645,6 +762,22 @@ class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
         return attr_indep
     
     def estimClass(self, attrs):
+        """
+        Choisit la classe de target avec la probabilité la plus grande en utilisant le maximum de vraisemblance
+        des paramètres dépendantes à target
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner qui va être filtrée
+            pour ne contenir que les éléments dépendants target
+
+        Returns
+        ----------
+        super().estimClass(new_attrs): int
+            la classe de target estimée en faisant appel à la méthode de la classe mère sur les attributs
+            filtrés
+        
+        """
         new_attrs = {}
         for cle, val in attrs.items():
             if cle in self.attr_indep and cle != 'target':
@@ -652,6 +785,21 @@ class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
         return super().estimClass(new_attrs)
     
     def estimProbas(self, attrs):
+        """
+        Calcule la probabilité a posteriori en utilisant l'hypothese du naive Bayes sur les attributs 
+        dépendantes de target
+
+        Parameters
+        ----------
+        attrs: list()
+            liste contenant les colonnes d'attributs que l'on veut examiner
+
+        Returns
+        ----------
+        super().estimProbas(new_attrs) : dict()
+            dictionnaire contenant les valeurs issues de la vraisemblance en utilisant P(target | attr)
+            tels que les attributs soient toutes dépendantes à target
+        """
         new_attrs = {}
         for cle, val in attrs.items():
             if cle in self.attr_indep and cle != 'target':
@@ -659,6 +807,14 @@ class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
         return super().estimProbas(new_attrs)
     
     def draw(self):
+        """
+        Dessine un graphe à partir d'une chaine décrivant les arcs des attributs dépendants de target 
+
+        Returns
+        ----------
+        drawGraph(res) : Image
+            image représentant le graphe tel que res contient la chaine des relations entre chaque attributs
+        """
         res = ''
         attrs = self.attr_indep.copy()
         for attr in attrs:
