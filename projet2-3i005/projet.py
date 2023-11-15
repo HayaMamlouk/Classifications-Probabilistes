@@ -865,3 +865,38 @@ def mapClassifiers(dic, df) :
 # Malgré cela, les classifieurs MAPNaiveBayes et ReducedMAPNaiveBayes demeurent plus performants. Bien que le taux de faux positifs soit 
 # légèrement plus élevé, le rappel est également plus élevé, démontrant une meilleure capacité à identifier les vrais positifs."
 #####
+
+#####
+# Question 8 : Conclusion finale
+#####
+# Le principal objectif de ce projet était de développer des classifieurs capables de classifier un individu comme atteint d'une maladie 
+# cardiaque ou non en se basant sur certains attributs. Pour ce faire, différentes approches de classification ont été explorées 
+# et évaluées à l'aide d'une dataframe spécifique.
+#
+# Le travail a débuté par une approche simple de classification a priori, qui estime la classe en se basant sur la classe majoritaire.
+# Ensuite, des classifieurs probabilistes à deux dimensions ont été mis en œuvre, utilisant les probabilités conditionnelles
+# P(target|attr) avec le maximum de vraisemblance (ML2DClassifier) et P(attr|target) avec le maximum a posteriori (MAP2DClassifier).
+#
+# L'introduction de la notion d'indépendance, en particulier dans le contexte du Naïve Bayes, a permis de simplifier la représentation 
+# des distributions de probabilités. Lorsque l’indépendance des attributs conditionnellement a target a été établie, cela a conduit à des 
+# variantes des classifieurs, tels que MLNaiveBayesClassifier et MAPNaiveBayesClassifier, qui démontrent une efficacité avec une hausse 
+# dans la précision.
+#
+# Nous avons introduit la possibilité que certains attributs peuvent ne pas être déterminants pour estimer la classe d'un individu,
+# et cela est déterminer par leur indépendance à target. Cela a conduit à la création de ReducedMLNaiveBayesClassifier et 
+# ReducedMAPNaiveBayesClassifier, qui prennent en compte uniquement les attributs dépendants de la cible dans le processus d'estimation.
+#
+# L'évaluation des classifieurs a révélé une tendance : les classifieurs MAP (a posteriori) semblent toujours obtenir les meilleurs
+#  résultats. Cette prédominance peut s'expliquer par l'intégration des probabilités a posteriori dans le processus de décision.
+#  Cela revient au fait que les probabilités a posteriori intègrent l'information a priori, gèrent les classes déséquilibrées,
+#  réduisent la sensibilité aux données aberrantes, et donc permettent une prise de décision plus robuste et fournir une meilleure 
+# gestion de l'incertitude.
+#
+# En synthèse, ce projet a souligné l'importance de choisir judicieusement entre différentes approches de classification en fonction
+#  des caractéristiques spécifiques des données. Les résultats obtenus fournissent des indications cruciales pour la classification des
+#  maladies cardiaques à partir d'attributs donnés. Il est essentiel de noter que l'utilisation de différentes dataframes (train et test)
+#  a été déterminante, permettant aux classifieurs de conserver leur généralité et de s'adapter à des jeux de données variés. 
+# Cette variation dans les performances des classifieurs en fonction des dataframes souligne l'importance de cette diversité dans 
+# l'analyse et la prise de décision.
+#
+#####
