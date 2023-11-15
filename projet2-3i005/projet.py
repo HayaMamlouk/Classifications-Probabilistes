@@ -682,8 +682,10 @@ class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
 def mapClassifiers(dic, df) :
     """
     représente graphiquement les classifiers dans l'espace (précision,rappel).
-    :param dic: un dictionnaire de {nom:instance de classifier}
-    :param df: un dataframe
+    Parameters
+    ----------
+    dic: un dictionnaire de {nom:instance de classifier}
+    df : un dataframe
     """
     plt.figure(figsize=(6,6)) # Inirialisation du graphe
 
@@ -696,7 +698,7 @@ def mapClassifiers(dic, df) :
     plt.show
 
 #####
-# Question 6.1: 
+# Question 6.3: Conclusion 
 #####
 # Pour la dataframe train, le classifieur MAPNaiveBayes, utilisant des estimations a priori avec l'hypothèse du naive Bayes, 
 # semble être le plus performant, étant le plus proche du coin supérieur droit sur le graphique (précision, rappel). 
