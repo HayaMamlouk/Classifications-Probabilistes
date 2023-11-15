@@ -737,10 +737,11 @@ class ReducedMAPNaiveBayesClassifier(MAPNaiveBayesClassifier):
         df : pd.dataframe
             Nouveau dataframe issu de la base tel qu'on ne considère que les colonnes des attributs dépendants
             de target
+        """
         self.attr_indep = self.attrs_minimisees(df, x)
         self.df = df[self.attr_indep]
         super().__init__(self.df)
-    """ 
+     
         
     def attrs_minimisees(self, df, x):
         """
